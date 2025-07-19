@@ -1,7 +1,7 @@
-package com.rsupport.board.service;
+package com.rsp.board.service;
 
-import com.rsupport.board.entity.Board;
-import com.rsupport.board.repository.BoardRepository;
+import com.rsp.board.entity.Board;
+import com.rsp.board.repository.BoardRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

@@ -1,6 +1,6 @@
-package com.rsupport.board.repository;
+package com.rsp.board.repository;
 
-import com.rsupport.board.entity.Board;
+import com.rsp.board.entity.Board;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
