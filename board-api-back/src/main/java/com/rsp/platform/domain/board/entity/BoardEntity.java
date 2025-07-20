@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity                         // JPA에서 데이터베이스 테이블과 매핑되는 클래스임을 나타냄
 @Table(name = "rsp_board")      // 맵핑될 테이블 지정
@@ -46,6 +48,9 @@ public class BoardEntity {
     @Column(nullable = false)
     private LocalDateTime updateDate;
 
+    @Column(name = "file_id")
+    private Long fileId;
+
     // BoardEntity.java 내부
     public static BoardEntity create(String title, String content, String insertId) {
         LocalDateTime now = LocalDateTime.now();
@@ -73,6 +78,13 @@ public class BoardEntity {
     // 게시글 삭제 (소프트 딜리트)
     public void delete(String updateId) {
         this.isDelete = true;
+        this.updateId = updateId;
+        this.updateDate = LocalDateTime.now();
+    }
+
+    // 파일 ID 설정
+    public void setFileId(Long fileId, String updateId) {
+        this.fileId = fileId;
         this.updateId = updateId;
         this.updateDate = LocalDateTime.now();
     }

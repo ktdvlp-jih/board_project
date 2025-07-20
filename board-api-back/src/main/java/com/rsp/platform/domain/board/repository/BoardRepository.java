@@ -1,12 +1,14 @@
 package com.rsp.platform.domain.board.repository;
 
 import com.rsp.platform.domain.board.entity.BoardEntity;
-import com.rsp.platform.domain.board.vo.BoardVo;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 /*
@@ -31,13 +33,43 @@ import java.util.Optional;
         */
 
 @Repository
-public interface BoardRepository extends JpaRepository<BoardEntity, Long>, JpaSpecificationExecutor<BoardEntity> { // 방법 1: 동적 조건 검색용
+public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
 
-    // 방법 2: 메서드 네이밍 기반 고정 조건 검색
-    // 조건 둘 다 전달되어야 작동 (null safe 아님, 간단할 땐 이게 편함)
-    List<BoardEntity> findByBoardTitleContainingAndInsertIdOrderByBoardIdDesc(String boardTitle, String insertId);
 
+    // 게시글 상세 조회 (삭제되지 않은 게시글만)
     Optional<BoardEntity> findByBoardIdAndIsDeleteFalse(Long boardId);
+    
+    // 게시글 상세 조회 (삭제되지 않고 활성화된 게시글만)
+    Optional<BoardEntity> findByBoardIdAndIsDeleteFalseAndIsEnableTrue(Long boardId);
+
+    
+    // 다중필드 통합검색 (모든 조건을 하나의 쿼리로 처리)
+    @Query("""
+        SELECT b FROM BoardEntity b 
+        WHERE b.isDelete = false 
+        AND b.isEnable = true
+        AND (:keyword IS NULL OR 
+             b.boardTitle LIKE CONCAT('%', :keyword, '%') OR 
+             b.boardContent LIKE CONCAT('%', :keyword, '%'))
+        AND (:boardTitle IS NULL OR b.boardTitle LIKE CONCAT('%', :boardTitle, '%'))
+        AND (:boardContent IS NULL OR b.boardContent LIKE CONCAT('%', :boardContent, '%'))
+        AND (:author IS NULL OR b.insertId LIKE CONCAT('%', :author, '%'))
+        AND (:minViewCount IS NULL OR b.viewCount >= :minViewCount)
+        AND (:maxViewCount IS NULL OR b.viewCount <= :maxViewCount)
+        AND (:startDate IS NULL OR b.insertDate >= :startDate)
+        AND (:endDate IS NULL OR b.insertDate <= :endDate)
+        """)
+    Page<BoardEntity> searchBoards(
+        @Param("keyword") String keyword,
+        @Param("boardTitle") String boardTitle,
+        @Param("boardContent") String boardContent,
+        @Param("author") String author,
+        @Param("minViewCount") Long minViewCount,
+        @Param("maxViewCount") Long maxViewCount,
+        @Param("startDate") LocalDateTime startDate,
+        @Param("endDate") LocalDateTime endDate,
+        Pageable pageable
+    );
 
 }
 

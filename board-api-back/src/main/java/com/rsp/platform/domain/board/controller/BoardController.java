@@ -7,10 +7,13 @@ import com.rsp.platform.domain.board.vo.BoardVo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
+import java.time.LocalDateTime;
 
 @Slf4j
 @RestController
@@ -20,18 +23,32 @@ public class BoardController {
 
     private final BoardService boardService;
 
-    // 게시글 목록 조회 (GET /api/boards?title=...&author=...)
+    // 게시글 목록 조회 및 검색 (GET /api/boards?title=...&author=... 또는 GET /api/boards)
     @GetMapping
-    public ResponseEntity<?> getBoardList(
+    public ResponseEntity<Page<BoardEntity>> getBoardList(
+            @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String boardTitle,
-            @RequestParam(required = false) String insertId) {
+            @RequestParam(required = false) String boardContent,
+            @RequestParam(required = false) String author,
+            @RequestParam(required = false) Long minViewCount,
+            @RequestParam(required = false) Long maxViewCount,
+            @RequestParam(required = false) LocalDateTime startDate,
+            @RequestParam(required = false) LocalDateTime endDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "boardId") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDirection) {
 
-        log.info("게시글 목록 요청 - 제목: {}, 작성자: {}", boardTitle, insertId);
-        List<BoardEntity> result = boardService.getBoardList(boardTitle, insertId);
+        log.info("게시글 목록/검색 요청 - 키워드: {}, 제목: {}, 작성자: {}", keyword, boardTitle, author);
+        
+        Page<BoardEntity> result = boardService.searchBoards(
+                keyword, boardTitle, boardContent, author, 
+                minViewCount, maxViewCount, startDate, endDate,
+                page, size, sortBy, sortDirection
+        );
 
-        if (result.isEmpty()) {
-            return ResponseEntity.ok().body("{\"message\":\"게시글이 없습니다.\"}");
-        }
+        log.info("조회 완료 - {}건 ({}페이지 중 {}페이지)", 
+                result.getTotalElements(), result.getTotalPages(), result.getNumber() + 1);
 
         return ResponseEntity.ok(result);
     }
@@ -44,11 +61,19 @@ public class BoardController {
         return ResponseEntity.ok(board);
     }
 
-    // 게시글 등록 (POST /api/boards)
-    @PostMapping
-    public ResponseEntity<BoardRequest> insertBoard(@RequestBody BoardRequest dto) {
-        log.info("새 게시글 등록 요청: {}", dto.getBoardTitle());
-        return ResponseEntity.ok(boardService.insertBoard(dto));
+    // 게시글 등록 (POST /api/boards) - 파일 첨부 지원
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<BoardRequest> insertBoard(
+            @RequestPart("board") BoardRequest dto,
+            @RequestPart(value = "files", required = false) MultipartFile[] files) {
+        
+        log.info("새 게시글 등록 요청: {}, 파일 수: {}", 
+                dto.getBoardTitle(), files != null ? files.length : 0);
+        
+        // 게시글 저장
+        BoardRequest savedBoard = boardService.insertBoard(dto);
+        
+        return ResponseEntity.ok(savedBoard);
     }
 
     // 게시글 수정 (PUT /api/boards/{boardId})

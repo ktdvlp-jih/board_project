@@ -6,14 +6,16 @@ import com.rsp.platform.common.exception.NoContentException;
 import com.rsp.platform.domain.board.repository.BoardRepository;
 import com.rsp.platform.domain.board.vo.BoardVo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 
-import jakarta.persistence.criteria.Predicate;
 import org.springframework.web.server.ResponseStatusException;
 
 
@@ -24,39 +26,20 @@ public class BoardService {
     private final BoardRepository boardRepository;
 
 
-    public List<BoardEntity> getBoardList(String boardTitle, String insertId) {
-        // 방법 1: Specification 방식 (동적 조건)
-        List<BoardEntity> result = boardRepository.findAll((root, query, cb) -> {
-            List<Predicate> predicates = new ArrayList<>();
-            if (boardTitle != null && !boardTitle.isBlank()) {
-                predicates.add(cb.like(root.get("boardTitle"), "%" + boardTitle + "%"));
-            }
-            if (insertId != null && !insertId.isBlank()) {
-                predicates.add(cb.equal(root.get("insertId"), insertId));
-            }
-            return cb.and(predicates.toArray(new Predicate[0]));
-        });
-
-        if (result.isEmpty()) {
-            throw new NoContentException("내용이 없습니다.");
-        }
-
-        return result;
-
-        /*
-        // 방법 2: 메서드 네이밍 방식 (단순 조건)
-        if (boardTitle != null && insertId != null) {
-            return boardRepository.findByBoardTitleContainingAndInsertIdOrderByIdDesc(boardTitle, insertId);
-        }
-        return boardRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
-        */
-    }
 
     public BoardVo boardInfo(Long boardId) {
-        BoardEntity entity = boardRepository.findByBoardIdAndIsDeleteFalse(boardId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "해당 게시글이 존재하지 않습니다."));
+        BoardEntity entity = boardRepository.findByBoardIdAndIsDeleteFalseAndIsEnableTrue(boardId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "해당 게시글이 존재하지 않거나 비활성화되었습니다."));
 
         return BoardVo.fromEntity(entity);
+    }
+
+    /**
+     * 게시글 Entity 조회 (파일 업로드용)
+     */
+    public BoardEntity findEntityById(Long boardId) {
+        return boardRepository.findByBoardIdAndIsDeleteFalseAndIsEnableTrue(boardId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "해당 게시글이 존재하지 않습니다."));
     }
 
 
@@ -72,11 +55,11 @@ public class BoardService {
 
     // 게시글 수정
     public BoardRequest updateBoard(Long boardId, BoardRequest dto) {
-        BoardEntity entity = boardRepository.findById(boardId)
-                .orElseThrow(() -> new NoSuchElementException("해당 게시글이 없습니다."));
+        BoardEntity entity = boardRepository.findByBoardIdAndIsDeleteFalseAndIsEnableTrue(boardId)
+                .orElseThrow(() -> new NoSuchElementException("해당 게시글이 없거나 수정할 수 없습니다."));
 
-        // setter 없는 스타일이면 엔티티에 비즈니스 메서드로 변경
-        entity.update(dto.getBoardTitle(), dto.getBoardContent(), dto.getInsertId());
+        // 게시글 내용 수정
+        entity.update(dto.getBoardTitle(), dto.getBoardContent(), dto.getUpdateId());
         BoardEntity updated = boardRepository.save(entity);
 
         // 엔티티 → DTO 변환
@@ -85,13 +68,8 @@ public class BoardService {
 
     // 게시글 삭제 (소프트 딜리트)
     public BoardRequest deleteBoard(Long boardId, BoardRequest dto) {
-        BoardEntity entity = boardRepository.findById(boardId)
-                .orElseThrow(() -> new NoSuchElementException("해당 게시글이 없습니다."));
-
-        // 삭제된 게시글인지 확인
-        if (entity.getIsDelete()) {
-            throw new IllegalStateException("이미 삭제된 게시글입니다.");
-        }
+        BoardEntity entity = boardRepository.findByBoardIdAndIsDeleteFalseAndIsEnableTrue(boardId)
+                .orElseThrow(() -> new NoSuchElementException("해당 게시글이 없거나 이미 삭제되었습니다."));
 
         // 소프트 딜리트 수행
         entity.delete(dto.getUpdateId());
@@ -101,6 +79,42 @@ public class BoardService {
         // 엔티티 → DTO 변환
         return BoardRequest.fromEntity(updated);
     }
+
+    // ===== 통합검색 관련 메서드 =====
+    
+    
+    
+    
+    
+    
+    /**
+     * 다중필드 통합검색
+     */
+    public Page<BoardEntity> searchBoards(String keyword, String boardTitle, String boardContent, 
+                                        String author, Long minViewCount, Long maxViewCount, 
+                                        LocalDateTime startDate, LocalDateTime endDate,
+                                        int page, int size, String sortBy, String sortDirection) {
+        
+        // 정렬 조건 생성
+        Sort.Direction direction = "ASC".equalsIgnoreCase(sortDirection) 
+            ? Sort.Direction.ASC 
+            : Sort.Direction.DESC;
+        
+        String validSortBy = switch (sortBy) {
+            case "boardTitle", "insertDate", "updateDate", "viewCount" -> sortBy;
+            default -> "boardId";
+        };
+        
+        Sort sort = Sort.by(direction, validSortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+        
+        // Repository 호출
+        return boardRepository.searchBoards(
+                keyword, boardTitle, boardContent, author,
+                minViewCount, maxViewCount, startDate, endDate, pageable
+        );
+    }
+    
 
 
 
