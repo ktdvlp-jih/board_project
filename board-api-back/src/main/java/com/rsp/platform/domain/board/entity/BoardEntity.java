@@ -70,9 +70,9 @@ public class BoardEntity {
         this.updateDate = LocalDateTime.now();
     }
 
-    // 게시글 삭제
-    public void update(String updateId) {
-        this.isDelete = false;
+    // 게시글 삭제 (소프트 딜리트)
+    public void delete(String updateId) {
+        this.isDelete = true;
         this.updateId = updateId;
         this.updateDate = LocalDateTime.now();
     }

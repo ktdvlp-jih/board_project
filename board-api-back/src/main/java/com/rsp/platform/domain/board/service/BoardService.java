@@ -56,15 +56,7 @@ public class BoardService {
         BoardEntity entity = boardRepository.findByBoardIdAndIsDeleteFalse(boardId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "해당 게시글이 존재하지 않습니다."));
 
-        BoardVo vo = new BoardVo();
-        vo.setBoardId(entity.getBoardId());
-        vo.setBoardTitle(entity.getBoardTitle());
-        vo.setInsertId(entity.getInsertId());
-        vo.setInsertDate(entity.getInsertDate());
-        vo.setUpdateId(entity.getUpdateId());
-        vo.setUpdateDate(entity.getUpdateDate());
-
-        return vo;
+        return BoardVo.fromEntity(entity);
     }
 
 
@@ -91,14 +83,18 @@ public class BoardService {
         return BoardRequest.fromEntity(updated);
     }
 
-    // 게시글 수정
+    // 게시글 삭제 (소프트 딜리트)
     public BoardRequest deleteBoard(Long boardId, BoardRequest dto) {
         BoardEntity entity = boardRepository.findById(boardId)
                 .orElseThrow(() -> new NoSuchElementException("해당 게시글이 없습니다."));
 
-        // setter 없는 스타일이면 엔티티에 비즈니스 메서드로 변경
-        //추후 로그인한 사용자 계정을 set
-        entity.update(dto.getUpdateId());
+        // 삭제된 게시글인지 확인
+        if (entity.getIsDelete()) {
+            throw new IllegalStateException("이미 삭제된 게시글입니다.");
+        }
+
+        // 소프트 딜리트 수행
+        entity.delete(dto.getUpdateId());
 
         BoardEntity updated = boardRepository.save(entity);
 

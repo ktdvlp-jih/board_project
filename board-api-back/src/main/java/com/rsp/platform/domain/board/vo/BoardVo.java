@@ -27,9 +27,13 @@ public class BoardVo {
                 .boardId(entity.getBoardId())
                 .boardTitle(entity.getBoardTitle())
                 .boardContent(entity.getBoardContent())
-                .insertId(entity.getInsertId())
-                .updateId(entity.getUpdateId())
                 .viewCount(entity.getViewCount())
+                .isDelete(entity.getIsDelete())
+                .isEnable(entity.getIsEnable())
+                .insertId(entity.getInsertId())
+                .insertDate(entity.getInsertDate())
+                .updateId(entity.getUpdateId())
+                .updateDate(entity.getUpdateDate())
                 .build();
     }
 }
