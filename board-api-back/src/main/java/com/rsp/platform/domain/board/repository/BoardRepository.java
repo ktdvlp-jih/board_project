@@ -4,6 +4,7 @@ import com.rsp.platform.domain.board.entity.BoardEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -33,41 +34,28 @@ import java.util.Optional;
         */
 
 @Repository
-public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
+public interface BoardRepository extends JpaRepository<BoardEntity, Long>, JpaSpecificationExecutor<BoardEntity> {
 
 
     // 게시글 상세 조회 (삭제되지 않은 게시글만)
-    Optional<BoardEntity> findByBoardIdAndIsDeleteFalse(Long boardId);
+    Optional<BoardEntity> findByBoardId(Long boardId);
     
     // 게시글 상세 조회 (삭제되지 않고 활성화된 게시글만)
     Optional<BoardEntity> findByBoardIdAndIsDeleteFalseAndIsEnableTrue(Long boardId);
 
-    
+
     // 다중필드 통합검색 (모든 조건을 하나의 쿼리로 처리)
     @Query("""
         SELECT b FROM BoardEntity b 
         WHERE b.isDelete = false 
         AND b.isEnable = true
-        AND (:keyword IS NULL OR 
-             b.boardTitle LIKE CONCAT('%', :keyword, '%') OR 
-             b.boardContent LIKE CONCAT('%', :keyword, '%'))
         AND (:boardTitle IS NULL OR b.boardTitle LIKE CONCAT('%', :boardTitle, '%'))
         AND (:boardContent IS NULL OR b.boardContent LIKE CONCAT('%', :boardContent, '%'))
-        AND (:author IS NULL OR b.insertId LIKE CONCAT('%', :author, '%'))
-        AND (:minViewCount IS NULL OR b.viewCount >= :minViewCount)
-        AND (:maxViewCount IS NULL OR b.viewCount <= :maxViewCount)
-        AND (:startDate IS NULL OR b.insertDate >= :startDate)
-        AND (:endDate IS NULL OR b.insertDate <= :endDate)
         """)
     Page<BoardEntity> searchBoards(
-        @Param("keyword") String keyword,
+
         @Param("boardTitle") String boardTitle,
         @Param("boardContent") String boardContent,
-        @Param("author") String author,
-        @Param("minViewCount") Long minViewCount,
-        @Param("maxViewCount") Long maxViewCount,
-        @Param("startDate") LocalDateTime startDate,
-        @Param("endDate") LocalDateTime endDate,
         Pageable pageable
     );
 

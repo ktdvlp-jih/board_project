@@ -4,8 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity                         // JPA에서 데이터베이스 테이블과 매핑되는 클래스임을 나타냄
 @Table(name = "rsp_board")      // 맵핑될 테이블 지정
