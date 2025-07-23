@@ -41,7 +41,7 @@ public class BoardService {
     private final BoardQueryRepository boardQueryRepository;
 
     /**
-     * 게시글 조회
+     * 게시글 조회 (첨부파일 포함)
      */
     public BoardDetailResponse boardInfo(Long boardId) {
         // 400 Bad Request: 잘못된 파라미터
@@ -53,7 +53,14 @@ public class BoardService {
         BoardEntity entity = boardRepository.findByBoardIdAndIsDeleteFalseAndIsEnableTrue(boardId)
                 .orElseThrow(() -> new NoSuchElementException("해당 게시글이 존재하지 않거나 비활성화되었습니다."));
 
-        return BoardDetailResponse.fromEntity(entity);
+        // 첨부파일 목록 조회
+        List<com.rsp.platform.domain.file.dto.AttachFileResponse> files = boardQueryRepository.findFilesByBoardId(boardId);
+
+        // BoardDetailResponse 생성 후 파일 목록 설정
+        BoardDetailResponse response = BoardDetailResponse.fromEntity(entity);
+        response.setFiles(files);
+
+        return response;
     }
 
     /**

@@ -5,6 +5,8 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.rsp.platform.domain.board.dto.BoardListResponse;
 import com.rsp.platform.domain.board.entity.QBoardEntity;
+import com.rsp.platform.domain.file.dto.AttachFileResponse;
+import com.rsp.platform.domain.file.entity.QAttachFileEntity;
 import com.rsp.platform.domain.file.entity.QLinkFileEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -145,5 +147,30 @@ public class BoardQueryRepository {
         // 5. Page 객체 생성
         Pageable pageable = PageRequest.of(page, size);
         return new PageImpl<>(content, pageable, total != null ? total : 0L);
+    }
+
+    /**
+     * 게시글별 첨부파일 목록 조회 (QueryDSL)
+     * SQL: SELECT original_filename, file_size, file_path
+     *      FROM rsp_link_file a LEFT JOIN rsp_attach_file b ON (b.attach_id = a.attach_file_id)
+     *      WHERE a.ref_id = ?
+     */
+    public List<AttachFileResponse> findFilesByBoardId(Long boardId) {
+        QLinkFileEntity linkFile = QLinkFileEntity.linkFileEntity;
+        QAttachFileEntity attachFile = QAttachFileEntity.attachFileEntity;
+
+        return queryFactory
+                .select(Projections.constructor(AttachFileResponse.class,
+                    attachFile.attachId,
+                    attachFile.originalFilename,
+                    attachFile.saveFilename,
+                    attachFile.filePath,
+                    attachFile.fileSize
+                ))
+                .from(linkFile)
+                .leftJoin(attachFile).on(attachFile.attachId.eq(linkFile.attachFileId))
+                .where(linkFile.refId.eq(boardId))
+                .orderBy(linkFile.fileOrder.asc().nullsLast(), linkFile.linkFileId.asc())
+                .fetch();
     }
 }

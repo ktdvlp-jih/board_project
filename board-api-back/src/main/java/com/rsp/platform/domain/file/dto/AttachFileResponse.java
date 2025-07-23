@@ -9,6 +9,9 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class AttachFileResponse {
-    private Long attachFileId;
-    private String fileName;
+    private Long attachId;
+    private String originalFilename;
+    private String saveFilename;
+    private String filePath;
+    private Long fileSize;
 }
