@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 @Slf4j
 @RestController
@@ -23,36 +25,29 @@ public class BoardController {
 
     private final BoardService boardService;
 
-    // 게시글 목록 조회 및 검색 (GET /api/boards?title=...&author=... 또는 GET /api/boards)
+    // 게시글 목록 조회 및 검색 (GET /api/boards?codeId=...&boardTitle=...&fromDate=...&toDate=...)
     @GetMapping
     public ResponseEntity<Page<BoardListResponse>> getBoardList(
-            /*
-            //@RequestParam(required = false) String keyword,
-            //@RequestParam(required = false) String author,
-            //@RequestParam(required = false) Long minViewCount,
-            //@RequestParam(required = false) Long maxViewCount,
-            //@RequestParam(required = false) LocalDateTime startDate,
-            //@RequestParam(required = false) LocalDateTime endDate,
-            */
-
+            @RequestParam(required = false) String codeId,
             @RequestParam(required = false) String boardTitle,
             @RequestParam(required = false) String boardContent,
+            @RequestParam(required = false) String fromDate,
+            @RequestParam(required = false) String toDate,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "boardId") String sortBy,
             @RequestParam(defaultValue = "DESC") String sortDirection) {
 
-        // 서비스 호출 (검색 조건, 페이징, 정렬)
-        Page<BoardListResponse> result = boardService.searchBoards( boardTitle, boardContent, page, size, sortBy, sortDirection );
-        //log.info("게시글 목록/검색 요청 - 키워드: {}, 제목: {}, 작성자: {}", keyword, boardTitle, author);
-        /*Page<BoardEntity> result = boardService.searchBoards(
-                keyword, boardTitle, boardContent, author, 
-                minViewCount, maxViewCount, startDate, endDate,
-                page, size, sortBy, sortDirection
-        );*/
-        //Page<BoardEntity> result = boardService.searchBoards( boardTitle, boardContent,page, size, sortBy, sortDirection );
+        log.info("게시글 목록/검색 요청 - codeId: {}, boardTitle: {}, 검색기간: {} ~ {}", 
+                codeId, boardTitle, fromDate, toDate);
 
-        //log.info("조회 완료 - {}건 ({}페이지 중 {}페이지)", result.getTotalElements(), result.getTotalPages(), result.getNumber() + 1);
+        // 서비스 호출 (검색 조건, 페이징, 정렬) - 유효성 검증은 서비스에서 처리
+        Page<BoardListResponse> result = boardService.searchBoards(
+            codeId, boardTitle, boardContent, fromDate, toDate, 
+            page, size, sortBy, sortDirection);
+
+        log.info("조회 완료 - {}건 ({}페이지 중 {}페이지)", 
+                result.getTotalElements(), result.getTotalPages(), result.getNumber() + 1);
 
         return ResponseEntity.ok(result);
     }

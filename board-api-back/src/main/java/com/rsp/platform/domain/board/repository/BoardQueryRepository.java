@@ -28,7 +28,8 @@ public class BoardQueryRepository {
      *      FROM rsp_board a INNER JOIN rsp_link_file b ON (b.ref_id = a.board_id)
      *      GROUP BY board_id, board_title, view_count, insert_id, insert_date
      */
-    public Page<BoardListResponse> searchBoards(String boardTitle, String boardContent, 
+    public Page<BoardListResponse> searchBoards(String codeId, String boardTitle, String boardContent,
+                                               String fromDate, String toDate,
                                                int page, int size, String sortBy, String sortDirection) {
         
         QBoardEntity board = QBoardEntity.boardEntity;
@@ -42,11 +43,72 @@ public class BoardQueryRepository {
                .and(board.isEnable.isTrue());
         
         // 동적 검색 조건 추가
-        if (boardTitle != null && !boardTitle.isBlank()) {
-            builder.and(board.boardTitle.containsIgnoreCase(boardTitle));
+        if (codeId != null && !codeId.isBlank()) {
+            switch (codeId) {
+                case "001": // 제목만 검색
+                    if (boardTitle != null && !boardTitle.isBlank()) {
+                        builder.and(board.boardTitle.contains(boardTitle));
+                    }
+                    break;
+                case "002": // 내용만 검색
+                    if (boardTitle != null && !boardTitle.isBlank()) {
+                        builder.and(board.boardContent.contains(boardTitle));
+                    }
+                    break;
+                case "003": // 제목+내용 통합검색
+                    if (boardTitle != null && !boardTitle.isBlank()) {
+                        builder.and(
+                            board.boardTitle.contains(boardTitle)
+                            .or(board.boardContent.contains(boardTitle))
+                        );
+                    }
+                    break;
+                default:
+                    // 기본값: 제목+내용 별도 검색
+                    if (boardTitle != null && !boardTitle.isBlank()) {
+                        builder.and(board.boardTitle.contains(boardTitle));
+                    }
+                    if (boardContent != null && !boardContent.isBlank()) {
+                        builder.and(board.boardContent.contains(boardContent));
+                    }
+                    break;
+            }
+        } else {
+            // codeId 없을 때 기본 검색
+            if (boardTitle != null && !boardTitle.isBlank()) {
+                builder.and(board.boardTitle.contains(boardTitle));
+            }
+            if (boardContent != null && !boardContent.isBlank()) {
+                builder.and(board.boardContent.contains(boardContent));
+            }
         }
-        if (boardContent != null && !boardContent.isBlank()) {
-            builder.and(board.boardContent.containsIgnoreCase(boardContent));
+        
+        // 등록일자 범위 검색 (20250724 형식) - 필수값
+        if (fromDate == null || fromDate.isBlank() || fromDate.length() != 8) {
+            throw new IllegalArgumentException("검색시작일자(fromDate)는 필수값입니다. 형식: YYYYMMDD");
+        }
+        if (toDate == null || toDate.isBlank() || toDate.length() != 8) {
+            throw new IllegalArgumentException("검색종료일자(toDate)는 필수값입니다. 형식: YYYYMMDD");
+        }
+        
+        try {
+            // 검색시작일자 파싱 (00:00:00)
+            String fromYear = fromDate.substring(0, 4);
+            String fromMonth = fromDate.substring(4, 6);
+            String fromDay = fromDate.substring(6, 8);
+            java.time.LocalDateTime fromDateTime = java.time.LocalDateTime.of(
+                Integer.parseInt(fromYear), Integer.parseInt(fromMonth), Integer.parseInt(fromDay), 0, 0, 0);
+            
+            // 검색종료일자 파싱 (23:59:59)
+            String toYear = toDate.substring(0, 4);
+            String toMonth = toDate.substring(4, 6);
+            String toDay = toDate.substring(6, 8);
+            java.time.LocalDateTime toDateTime = java.time.LocalDateTime.of(
+                Integer.parseInt(toYear), Integer.parseInt(toMonth), Integer.parseInt(toDay), 23, 59, 59);
+            
+            builder.and(board.insertDate.between(fromDateTime, toDateTime));
+        } catch (Exception e) {
+            throw new IllegalArgumentException("날짜 형식이 올바르지 않습니다. 형식: YYYYMMDD");
         }
         
         // 2. 정렬 설정

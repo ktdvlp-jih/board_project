@@ -183,8 +183,48 @@ public class BoardService {
     /**
      * 다중필드 통합검색 (QueryDSL 버전 - 파일 개수 포함)
      */
-    public Page<BoardListResponse> searchBoards( String boardTitle, String boardContent, int page, int size, String sortBy, String sortDirection ) {
-        return boardQueryRepository.searchBoards(boardTitle, boardContent, page, size, sortBy, sortDirection);
+    public Page<BoardListResponse> searchBoards( String codeId, String boardTitle, String boardContent, String fromDate, String toDate, int page, int size, String sortBy, String sortDirection ) {
+        
+        // fromDate, toDate 유효성 검증
+        validateDateParameters(fromDate, toDate);
+        
+        return boardQueryRepository.searchBoards(codeId, boardTitle, boardContent, fromDate, toDate, page, size, sortBy, sortDirection);
+    }
+    
+    /**
+     * 날짜 파라미터 유효성 검증
+     */
+    private void validateDateParameters(String fromDate, String toDate) {
+        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd");
+        
+        // 필수값 체크
+        if (fromDate == null || fromDate.isBlank()) {
+            throw new IllegalArgumentException("시작일자(fromDate)는 필수값입니다. 형식: YYYYMMDD");
+        }
+        if (toDate == null || toDate.isBlank()) {
+            throw new IllegalArgumentException("종료일자(toDate)는 필수값입니다. 형식: YYYYMMDD");
+        }
+        
+        // 길이 체크 (8자리)
+        if (fromDate.length() != 8) {
+            throw new IllegalArgumentException("시작일자(fromDate) 형식이 올바르지 않습니다. 형식: YYYYMMDD");
+        }
+        if (toDate.length() != 8) {
+            throw new IllegalArgumentException("종료일자(toDate) 형식이 올바르지 않습니다. 형식: YYYYMMDD");
+        }
+        
+        // 숫자 형식 및 유효한 날짜 체크
+        try {
+            java.time.LocalDate fromLocalDate = java.time.LocalDate.parse(fromDate, formatter);
+            java.time.LocalDate toLocalDate = java.time.LocalDate.parse(toDate, formatter);
+            
+            // 날짜 범위 체크 (시작일이 종료일보다 늦으면 안됨)
+            if (fromLocalDate.isAfter(toLocalDate)) {
+                throw new IllegalArgumentException("시작일자가 종료일자보다 늦을 수 없습니다.");
+            }
+        } catch (java.time.format.DateTimeParseException e) {
+            throw new IllegalArgumentException("유효하지 않은 날짜입니다. 올바른 형식: YYYYMMDD (예: 20250724)");
+        }
     }
 
 
