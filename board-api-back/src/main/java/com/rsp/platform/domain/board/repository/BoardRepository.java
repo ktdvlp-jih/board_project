@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 /*
@@ -44,20 +45,6 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long>, JpaSp
     Optional<BoardEntity> findByBoardIdAndIsDeleteFalseAndIsEnableTrue(Long boardId);
 
 
-    // 다중필드 통합검색 (모든 조건을 하나의 쿼리로 처리)
-    @Query("""
-        SELECT b FROM BoardEntity b 
-        WHERE b.isDelete = false 
-        AND b.isEnable = true
-        AND (:boardTitle IS NULL OR b.boardTitle LIKE CONCAT('%', :boardTitle, '%'))
-        AND (:boardContent IS NULL OR b.boardContent LIKE CONCAT('%', :boardContent, '%'))
-        """)
-    Page<BoardEntity> searchBoards(
-
-        @Param("boardTitle") String boardTitle,
-        @Param("boardContent") String boardContent,
-        Pageable pageable
-    );
 
 }
 

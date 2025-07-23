@@ -5,14 +5,14 @@ import com.rsp.platform.domain.board.dto.BoardListResponse;
 import com.rsp.platform.domain.board.dto.BoardRequest;
 import com.rsp.platform.domain.board.entity.BoardEntity;
 import com.rsp.platform.domain.board.repository.BoardRepository;
-
-
+import com.rsp.platform.domain.board.repository.BoardQueryRepository;
 import com.rsp.platform.domain.file.repository.AttachFileRepository;
 import com.rsp.platform.domain.file.repository.LinkFileRepository;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -20,6 +20,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -37,6 +38,7 @@ public class BoardService {
     private final FileStorageService fileStorageService;
     private final AttachFileRepository attachFileRepository;
     private final LinkFileRepository linkFileRepository;
+    private final BoardQueryRepository boardQueryRepository;
 
     /**
      * 게시글 조회
@@ -117,13 +119,13 @@ public class BoardService {
                             .fileSize(file.getSize())
                             .insertId(dto.getInsertId())
                             .build();
-                    System.out.println("attachFileId: " + attachFile.getAttachFileId()); // save() 직전
+                    System.out.println("attachFileId: " + attachFile.getAttachId()); // save() 직전
                     AttachFileEntity savedAttachFile = attachFileRepository.save(attachFile);
 
                     // rsp_link_file 저장 (게시글-파일 연결)
                     LinkFileEntity linkFile = LinkFileEntity.builder()
                             .refId(savedBoard.getBoardId())  // 게시글 PK
-                            .attachFileId(savedAttachFile.getAttachFileId()) // 파일 PK
+                            .attachFileId(savedAttachFile.getAttachId()) // 파일 PK
                             .fileOrder(order++)
                             .insertId(dto.getInsertId())
                             .build();
@@ -179,33 +181,12 @@ public class BoardService {
     
 
     /**
-     * 다중필드 통합검색
+     * 다중필드 통합검색 (QueryDSL 버전 - 파일 개수 포함)
      */
-
     public Page<BoardListResponse> searchBoards( String boardTitle, String boardContent, int page, int size, String sortBy, String sortDirection ) {
-        // 정렬 방향 파싱 (기본 DESC)
-        Sort.Direction direction = Sort.Direction.fromOptionalString(sortDirection).orElse(Sort.Direction.DESC);
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
-
-        // 동적 검색 조건 Specification
-        Specification<BoardEntity> spec = (root, query, cb) -> {
-            List<Predicate> predicates = new ArrayList<>();
-            if (boardTitle != null && !boardTitle.isBlank()) {
-                predicates.add(cb.like(root.get("boardTitle"), "%" + boardTitle + "%"));
-            }
-            if (boardContent != null && !boardContent.isBlank()) {
-                predicates.add(cb.like(root.get("boardContent"), "%" + boardContent + "%"));
-            }
-            predicates.add(cb.isFalse(root.get("isDelete")));
-            predicates.add(cb.isTrue(root.get("isEnable")));
-            return cb.and(predicates.toArray(new Predicate[0]));
-        };
-
-        // 엔티티 → VO로 변환해서 반환
-        Page<BoardEntity> pageEntity = boardRepository.findAll(spec, pageable);
-        return pageEntity.map(BoardListResponse::fromEntity);
+        return boardQueryRepository.searchBoards(boardTitle, boardContent, page, size, sortBy, sortDirection);
     }
-    
+
 
 
 

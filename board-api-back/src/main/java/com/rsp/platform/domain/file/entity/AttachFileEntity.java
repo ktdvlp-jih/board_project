@@ -18,7 +18,7 @@ public class AttachFileEntity {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "rsp_attach_file_seq") // 사용할 시퀀스 지정하면 값 자동생성
     @SequenceGenerator(name = "rsp_attach_file_seq", sequenceName = "rsp_attach_file_seq", allocationSize = 1)
     //private Long boardId;
-    private Long attachFileId;
+    private Long attachId;
 
     private String originalFilename;
     private String saveFilename;

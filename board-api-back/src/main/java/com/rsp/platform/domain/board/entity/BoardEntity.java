@@ -34,6 +34,12 @@ public class BoardEntity {
     @Column(nullable = false)
     private Boolean isEnable;
 
+    @Column(nullable = false)
+    private LocalDateTime startDate;
+
+    @Column(nullable = false)
+    private LocalDateTime endDate;
+
     @Column(nullable = false, length = 20)
     private String insertId;
 
@@ -46,8 +52,7 @@ public class BoardEntity {
     @Column(nullable = false)
     private LocalDateTime updateDate;
 
-    @Column(name = "file_id")
-    private Long fileId;
+
 
     // BoardEntity.java 내부
     public static BoardEntity create(String title, String content, String insertId) {
@@ -76,13 +81,6 @@ public class BoardEntity {
     // 게시글 삭제 (소프트 딜리트)
     public void delete(String updateId) {
         this.isDelete = true;
-        this.updateId = updateId;
-        this.updateDate = LocalDateTime.now();
-    }
-
-    // 파일 ID 설정
-    public void setFileId(Long fileId, String updateId) {
-        this.fileId = fileId;
         this.updateId = updateId;
         this.updateDate = LocalDateTime.now();
     }

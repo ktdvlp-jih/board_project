@@ -1,6 +1,7 @@
 package com.rsp.platform.domain.board.dto;
 
 import com.rsp.platform.domain.board.entity.BoardEntity;
+import jakarta.persistence.Column;
 import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,6 +18,8 @@ public class BoardRequest {
     private String boardTitle;
     private String boardContent;
     private Long viewCount;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
     private Boolean isDelete;
     private Boolean isEnable;
     private String insertId;
@@ -27,11 +30,15 @@ public class BoardRequest {
 
 
 
+
+
     public static BoardRequest fromEntity(BoardEntity entity) {
         return BoardRequest.builder()
                 .boardId(entity.getBoardId())
                 .boardTitle(entity.getBoardTitle())
                 .boardContent(entity.getBoardContent())
+                .startDate(entity.getStartDate())
+                .endDate(entity.getEndDate())
                 .insertId(entity.getInsertId())
                 .updateId(entity.getUpdateId())
                 .viewCount(entity.getViewCount())
