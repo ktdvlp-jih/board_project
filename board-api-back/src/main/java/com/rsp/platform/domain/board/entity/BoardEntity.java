@@ -55,7 +55,7 @@ public class BoardEntity {
 
 
     // BoardEntity.java 내부
-    public static BoardEntity create(String title, String content, String insertId) {
+    public static BoardEntity create(String title, String content, LocalDateTime startDate,LocalDateTime endDate, String insertId) {
         LocalDateTime now = LocalDateTime.now();
         return BoardEntity.builder()
                 .boardTitle(title)
@@ -63,10 +63,12 @@ public class BoardEntity {
                 .viewCount(0L)
                 .isDelete(false)
                 .isEnable(true)
+                .startDate(startDate)
+                .endDate(endDate)
                 .insertId(insertId)
                 .insertDate(now)
-                .updateDate(now)
                 .updateId(insertId)
+                .updateDate(now)
                 .build();
     }
 
@@ -76,6 +78,15 @@ public class BoardEntity {
         this.boardContent = boardContent;
         this.updateId = updateId;
         this.updateDate = LocalDateTime.now();
+    }
+
+    // 조회수 증가
+    // 도메인 메서드로 분리한 이유:
+    // 1. 비즈니스 의도 명확화 (단순 +1이 아닌 "조회수 증가"라는 행위)
+    // 2. 향후 확장성: 중복 방지, 로그 기록, 통계 처리 등 추가 로직 쉽게 적용 가능
+    // 3. 캡슐화: 조회수 증가 관련 로직을 엔티티 내부에서 관리
+    public void incrementViewCount() {
+        this.viewCount++;
     }
 
     // 게시글 삭제 (소프트 딜리트)

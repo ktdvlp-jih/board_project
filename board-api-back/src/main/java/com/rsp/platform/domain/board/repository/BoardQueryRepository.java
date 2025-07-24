@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -31,8 +32,8 @@ public class BoardQueryRepository {
      *      GROUP BY board_id, board_title, view_count, insert_id, insert_date
      */
     public Page<BoardListResponse> searchBoards(String codeId, String boardTitle, String boardContent,
-                                               String fromDate, String toDate,
-                                               int page, int size, String sortBy, String sortDirection) {
+                                                LocalDateTime fromDate, LocalDateTime toDate,
+                                                int page, int size, String sortBy, String sortDirection) {
         
         QBoardEntity board = QBoardEntity.boardEntity;
         QLinkFileEntity linkFile = QLinkFileEntity.linkFileEntity;
@@ -85,32 +86,26 @@ public class BoardQueryRepository {
             }
         }
         
-        // 등록일자 범위 검색 (20250724 형식) - 필수값
-        if (fromDate == null || fromDate.isBlank() || fromDate.length() != 8) {
-            throw new IllegalArgumentException("검색시작일자(fromDate)는 필수값입니다. 형식: YYYYMMDD");
-        }
-        if (toDate == null || toDate.isBlank() || toDate.length() != 8) {
-            throw new IllegalArgumentException("검색종료일자(toDate)는 필수값입니다. 형식: YYYYMMDD");
-        }
+
         
         try {
             // 검색시작일자 파싱 (00:00:00)
-            String fromYear = fromDate.substring(0, 4);
-            String fromMonth = fromDate.substring(4, 6);
-            String fromDay = fromDate.substring(6, 8);
+            String fromYear = String.valueOf(fromDate.getYear());
+            String fromMonth = String.valueOf(fromDate.getMonthValue());
+            String fromDay = String.valueOf(fromDate.getDayOfMonth());
             java.time.LocalDateTime fromDateTime = java.time.LocalDateTime.of(
                 Integer.parseInt(fromYear), Integer.parseInt(fromMonth), Integer.parseInt(fromDay), 0, 0, 0);
             
             // 검색종료일자 파싱 (23:59:59)
-            String toYear = toDate.substring(0, 4);
-            String toMonth = toDate.substring(4, 6);
-            String toDay = toDate.substring(6, 8);
+            String toYear = String.valueOf(toDate.getYear());
+            String toMonth = String.valueOf(toDate.getMonthValue());
+            String toDay = String.valueOf(toDate.getDayOfMonth());
             java.time.LocalDateTime toDateTime = java.time.LocalDateTime.of(
                 Integer.parseInt(toYear), Integer.parseInt(toMonth), Integer.parseInt(toDay), 23, 59, 59);
             
             builder.and(board.insertDate.between(fromDateTime, toDateTime));
         } catch (Exception e) {
-            throw new IllegalArgumentException("날짜 형식이 올바르지 않습니다. 형식: YYYYMMDD");
+            throw new IllegalArgumentException("날짜 형식이 올바르지 않습니다.");
         }
         
         // 2. 정렬 설정
@@ -170,7 +165,7 @@ public class BoardQueryRepository {
                 .from(linkFile)
                 .leftJoin(attachFile).on(attachFile.attachId.eq(linkFile.attachFileId))
                 .where(linkFile.refId.eq(boardId))
-                .orderBy(linkFile.fileOrder.asc().nullsLast(), linkFile.linkFileId.asc())
+                .orderBy(linkFile.linkFileId.asc())
                 .fetch();
     }
 }

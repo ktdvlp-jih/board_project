@@ -1,17 +1,17 @@
 # README.md
 
 ## 📘 프로젝트 소개
-Spring Boot 기반의 게시판 프로젝트입니다.기존에는 MyBatis 방식에 익숙했으나
-이번 프로젝트에서는 Spring Data JPA + Hibernate 조합을 새롭게 적용하였습니다.
-React를 활용한 프론트엔드 개발도 예정되어 있습니다.
+Spring Boot 기반의 게시판 프로젝트입니다. 기존에는 MyBatis 방식에 익숙했으나
+이번 프로젝트에서는 Spring Data JPA + Hibernate + QueryDSL 조합을 새롭게 적용하였습니다.
 
 ## 🧰 기술 스택
 - Java 17
 - Spring Boot 3.x
 - Spring Data JPA + Hibernate
-- MSSQL
-- React (예정)
+- QueryDSL (동적 쿼리)
+- MySQL, SQL Server, Oracle, H2 (다중 DB 지원)
 - Gradle
+- JUnit 5, Mockito (테스트)
 
 ## 📁 프로젝트 구조
 ```
@@ -33,8 +33,11 @@ React를 활용한 프론트엔드 개발도 예정되어 있습니다.
 ```
 
 ## ✨ 주요 기능
-- 게시글 목록 조회: 삭제되지 않고(isDelete=false), 사용 가능한(isEnable=true) 게시글만 최신순으로 정렬하여 조회
-- Spring Data JPA 네이밍 전략 기반 쿼리 자동 생성
+- 게시글 CRUD (등록, 조회, 수정, 삭제)
+- 파일 첨부 및 관리 (다중 파일 지원)
+- 동적 검색 (제목, 내용, 제목+내용, 날짜 범위)
+- 페이징 처리 및 정렬
+- 단위/통합 테스트
 
 ## ⚙ 실행 방법
 1. 원하는 DB에 맞는 프로파일을 선택해 활성화 (`application.properties`)
@@ -84,7 +87,8 @@ public class BoardService {
 ```
 
 ## 🚧 향후 계획
-- 게시글 등록, 수정, 삭제 기능 개발 예정
-- React를 활용한 사용자 인터페이스 구축
-- QueryDSL 또는 Native Query 활용한 고급 조회 기능 확장
+- 사용자 인증/권한 관리
+- 게시글 조회수 증가 기능
+- 파일 다운로드 API
+- 게시글 좋아요/댓글 기능
 

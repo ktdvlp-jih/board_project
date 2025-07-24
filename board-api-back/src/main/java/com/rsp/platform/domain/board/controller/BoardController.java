@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Slf4j
@@ -31,23 +32,21 @@ public class BoardController {
             @RequestParam(required = false) String codeId,
             @RequestParam(required = false) String boardTitle,
             @RequestParam(required = false) String boardContent,
-            @RequestParam(required = false) String fromDate,
-            @RequestParam(required = false) String toDate,
+            @RequestParam(required = false) LocalDateTime fromDate,
+            @RequestParam(required = false) LocalDateTime toDate,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "boardId") String sortBy,
             @RequestParam(defaultValue = "DESC") String sortDirection) {
 
-        log.info("게시글 목록/검색 요청 - codeId: {}, boardTitle: {}, 검색기간: {} ~ {}", 
-                codeId, boardTitle, fromDate, toDate);
+        log.info("게시글 목록/검색 요청 - codeId: {}, boardTitle: {}, 검색기간: {} ~ {}", codeId, boardTitle, fromDate, toDate);
 
         // 서비스 호출 (검색 조건, 페이징, 정렬) - 유효성 검증은 서비스에서 처리
-        Page<BoardListResponse> result = boardService.searchBoards(
-            codeId, boardTitle, boardContent, fromDate, toDate, 
-            page, size, sortBy, sortDirection);
+        Page<BoardListResponse> result = boardService.searchBoards(codeId, boardTitle, boardContent, fromDate, toDate, page, size, sortBy, sortDirection);
 
-        log.info("조회 완료 - {}건 ({}페이지 중 {}페이지)", 
-                result.getTotalElements(), result.getTotalPages(), result.getNumber() + 1);
+        log.info("조회 완료 - {}건 ({}페이지 중 {}페이지)", result.getTotalElements(), result.getTotalPages(), result.getNumber() + 1);
+        log.info("total", result.getT);
+
 
         return ResponseEntity.ok(result);
     }
@@ -80,8 +79,7 @@ public class BoardController {
             @RequestPart BoardRequest dto,
             @RequestPart(value = "files", required = false) MultipartFile[] files) throws IOException {
 
-        log.info("새 게시글 등록 요청: {}, 파일 수: {}",
-                dto.getBoardTitle(), files != null ? files.length : 0);
+        log.info("새 게시글 등록 요청: {}, 파일 수: {}",  dto.getBoardTitle(), files != null ? files.length : 0);
 
         // 게시글 저장
         BoardDetailResponse savedBoard = boardService.insertBoard(dto,files);
@@ -89,12 +87,12 @@ public class BoardController {
         return ResponseEntity.ok(savedBoard);
     }
 
-    // 게시글 수정 (PUT /api/boards/{boardId})
+    // 게시글 수정 (PUT /api/boards/{boardId}) - 파일 첨부 미지원
     @PutMapping(value = "/{boardId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<BoardDetailResponse> updateBoard(
             @PathVariable Long boardId,
             @RequestPart BoardRequest dto,
-            @RequestPart(value = "files", required = false) MultipartFile[] files) {
+            @RequestPart(value = "files", required = false) MultipartFile[] files) throws IOException {
 
         log.info("게시글 수정 요청 -ID:{} {}, 파일 수: {}", boardId, dto.getBoardTitle(), files != null ? files.length : 0);
         BoardDetailResponse response = boardService.updateBoard(boardId, dto, files);

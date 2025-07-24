@@ -21,10 +21,19 @@ public class LinkFileEntity {
 
     private Long refId;              // 게시글 PK 등 연결 대상
     private Long attachFileId;       // 파일 PK
-    private Integer fileOrder;       // 파일 순서 (옵션)
-    private String fileTag;          // 파일 유형 등(옵션)
+    private boolean isDelete;
     private String insertId;
     private LocalDateTime insertDate;
+    private String updateId;
+    private LocalDateTime updateDate;
+
+    // 게시글 파일 삭제용
+    public void update(Long refId, String updateId) {
+        this.refId = refId;
+        this.isDelete = true;
+        this.updateId = updateId;
+        this.updateDate = LocalDateTime.now();
+    }
 
     @PrePersist
     public void prePersist() {
