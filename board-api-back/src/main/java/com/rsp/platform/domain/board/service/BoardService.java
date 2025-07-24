@@ -51,6 +51,7 @@ public class BoardService {
     /**
      * 게시글 조회 (첨부파일 포함)
      */
+    @Transactional(readOnly = true)
     public BoardDetailResponse boardInfo(Long boardId) {
         // 400 Bad Request: 잘못된 파라미터
         if (boardId == null || boardId <= 0) {
@@ -253,6 +254,7 @@ public class BoardService {
     /**
      * 다중필드 통합검색 (QueryDSL 버전 - 파일 개수 포함)
      */
+    @Transactional(readOnly = true)
     public Page<BoardListResponse> searchBoards( String codeId, String boardTitle, String boardContent, LocalDateTime fromDate,LocalDateTime toDate, int page, int size, String sortBy, String sortDirection ) {
         
         // fromDate, toDate 유효성 검증 사용 X
