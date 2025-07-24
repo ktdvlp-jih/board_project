@@ -66,7 +66,7 @@ public class BoardService {
         boardRepository.save(entity);
 
         // 첨부파일 목록 조회
-        List<AttachFileResponse> files = boardQueryRepository.findFilesByBoardId(boardId);
+        List<AttachFileResponse> files = boardQueryRepository.findFilesByBoardIdAndIsDeleteFalse(boardId);
 
         // BoardDetailResponse 생성 후 파일 목록 설정
         BoardDetailResponse response = BoardDetailResponse.fromEntity(entity);
@@ -191,7 +191,7 @@ public class BoardService {
         List<LinkFileEntity> existingLinkFiles = linkFileRepository.findByRefId(boardId);
         for (LinkFileEntity linkFile : existingLinkFiles) {
             linkFile.update(boardId, dto.getUpdateId());
-            linkFileRepository.save(linkFile); // DB 반영 필수!
+            linkFileRepository.save(linkFile); // DB 반영 필수
         }
 
         // 3. 새로운 첨부파일 등록 처리
@@ -225,19 +225,21 @@ public class BoardService {
 
         // 4. 수정된 게시글 정보 반환 (첨부파일 목록 포함)
         BoardDetailResponse response = BoardDetailResponse.fromEntity(boardEntity);
-        List<AttachFileResponse> updatedFiles = boardQueryRepository.findFilesByBoardId(boardId);
+        List<AttachFileResponse> updatedFiles = boardQueryRepository.findFilesByBoardIdAndIsDeleteFalse(boardId);
         response.setFiles(updatedFiles);
         
         return response;
     }
 
     // 게시글 삭제 (소프트 딜리트)
-    public BoardDetailResponse deleteBoard(Long boardId, BoardRequest dto, MultipartFile[] files) {
+    @Transactional
+    public BoardDetailResponse deleteBoard(Long boardId) {
         BoardEntity entity = boardRepository.findByBoardId(boardId)
                 .orElseThrow(() -> new NoSuchElementException("해당 게시글이 없거나 이미 삭제되었습니다."));
 
-        // 소프트 딜리트 수행
-        entity.delete(dto.getUpdateId());
+        // 소프트 딜리트 수행 추후 로그인 개발시 updateId 들어가도록 수정하기
+        //entity.delete(dto.getUpdateId());
+        entity.delete();
 
         //BoardEntity updated = boardRepository.save(entity);
 

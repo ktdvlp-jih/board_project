@@ -45,8 +45,6 @@ public class BoardController {
         Page<BoardListResponse> result = boardService.searchBoards(codeId, boardTitle, boardContent, fromDate, toDate, page, size, sortBy, sortDirection);
 
         log.info("조회 완료 - {}건 ({}페이지 중 {}페이지)", result.getTotalElements(), result.getTotalPages(), result.getNumber() + 1);
-        
-
 
         return ResponseEntity.ok(result);
     }
@@ -64,8 +62,7 @@ public class BoardController {
     public ResponseEntity<BoardDetailResponse> insertBoard(
             @RequestBody BoardRequest dto ) {
         
-        log.info("새 게시글 등록 요청: {}",
-                dto.getBoardTitle(),dto.getBoardContent());
+        log.info("새 게시글 등록 요청: {}", dto.getBoardTitle(),dto.getBoardContent());
         
         // 게시글 저장
         BoardDetailResponse savedBoard = boardService.insertBoard(dto);
@@ -87,7 +84,7 @@ public class BoardController {
         return ResponseEntity.ok(savedBoard);
     }
 
-    // 게시글 수정 (PUT /api/boards/{boardId}) - 파일 첨부 미지원
+    // 게시글 수정 (PUT /api/boards/{boardId})
     @PutMapping(value = "/{boardId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<BoardDetailResponse> updateBoard(
             @PathVariable Long boardId,
@@ -100,13 +97,11 @@ public class BoardController {
     }
 
     // 게시글 삭제 (DELETE /api/boards/{boardId})
-    @DeleteMapping(value = "/{boardId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @DeleteMapping(value = "/{boardId}")
     public ResponseEntity<BoardDetailResponse> deleteBoard(
-            @PathVariable Long boardId,
-            @RequestPart BoardRequest dto,
-            @RequestPart(value = "files", required = false) MultipartFile[] files) {
+            @PathVariable Long boardId) {
         log.info("게시글 삭제 요청 - ID: {}", boardId);
-        BoardDetailResponse response = boardService.deleteBoard(boardId, dto, files);
+        BoardDetailResponse response = boardService.deleteBoard(boardId);
 
         return ResponseEntity.ok(response);
     }

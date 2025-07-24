@@ -18,6 +18,7 @@ public class BoardListResponse {
     private String boardTitle;          // 제목
     private Long viewCount;             // 조회수
     private Long fileCount;             // 파일 건수
+    private Boolean isFile;             // 첨부파일 유무 (UI 표시용)
     private String insertId;            // 작성자
     private LocalDateTime insertDate;   // 작성일자
 
@@ -32,6 +33,24 @@ public class BoardListResponse {
                 .insertId(entity.getInsertId())
                 .insertDate(entity.getInsertDate())
                 .build();
+    }
+
+    // QueryDSL 전용 생성자 (hasAttachment 제외, 6개 파라미터)
+    public BoardListResponse(Long boardId, String boardTitle, Long viewCount, 
+                           Long fileCount, String insertId, LocalDateTime insertDate) {
+        this.boardId = boardId;
+        this.boardTitle = boardTitle;
+        this.viewCount = viewCount;
+        this.fileCount = fileCount;
+        this.isFile = (fileCount != null && fileCount > 0); // 자동 계산
+        this.insertId = insertId;
+        this.insertDate = insertDate;
+    }
+
+    // fileCount 기반으로 isFile 자동 설정
+    public void setFileCount(Long fileCount) {
+        this.fileCount = fileCount;
+        this.isFile = (fileCount != null && fileCount > 0);
     }
 
 }

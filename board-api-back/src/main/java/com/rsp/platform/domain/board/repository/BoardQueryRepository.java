@@ -150,7 +150,7 @@ public class BoardQueryRepository {
      *      FROM rsp_link_file a LEFT JOIN rsp_attach_file b ON (b.attach_id = a.attach_file_id)
      *      WHERE a.ref_id = ?
      */
-    public List<AttachFileResponse> findFilesByBoardId(Long boardId) {
+    public List<AttachFileResponse> findFilesByBoardIdAndIsDeleteFalse(Long boardId) {
         QLinkFileEntity linkFile = QLinkFileEntity.linkFileEntity;
         QAttachFileEntity attachFile = QAttachFileEntity.attachFileEntity;
 
@@ -165,6 +165,7 @@ public class BoardQueryRepository {
                 .from(linkFile)
                 .leftJoin(attachFile).on(attachFile.attachId.eq(linkFile.attachFileId))
                 .where(linkFile.refId.eq(boardId))
+                .where(linkFile.isDelete.eq(false))
                 .orderBy(linkFile.linkFileId.asc())
                 .fetch();
     }

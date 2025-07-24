@@ -90,10 +90,10 @@ public class BoardEntity {
     }
 
     // 게시글 삭제 (소프트 딜리트)
-    public void delete(String updateId) {
+    public void delete() {
         this.isDelete = true;
-        this.updateId = updateId;
-        this.updateDate = LocalDateTime.now();
+        //this.updateId = updateId;
+        //this.updateDate = LocalDateTime.now();
     }
 
     /*
