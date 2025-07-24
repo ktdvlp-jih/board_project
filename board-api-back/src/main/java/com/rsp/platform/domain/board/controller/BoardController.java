@@ -45,7 +45,7 @@ public class BoardController {
         Page<BoardListResponse> result = boardService.searchBoards(codeId, boardTitle, boardContent, fromDate, toDate, page, size, sortBy, sortDirection);
 
         log.info("조회 완료 - {}건 ({}페이지 중 {}페이지)", result.getTotalElements(), result.getTotalPages(), result.getNumber() + 1);
-        log.info("total", result.getT);
+        
 
 
         return ResponseEntity.ok(result);
