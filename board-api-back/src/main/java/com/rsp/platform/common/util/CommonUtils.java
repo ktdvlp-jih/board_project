@@ -1,7 +1,5 @@
 package com.rsp.platform.common.util;
 
-import org.springframework.stereotype.Component;
-
 import java.time.LocalDateTime;
 
 public class CommonUtils {

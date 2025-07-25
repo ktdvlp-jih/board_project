@@ -1,37 +1,28 @@
 package com.rsp.platform.domain.board.service;
 
+import com.rsp.platform.common.file.FileStorageService;
 import com.rsp.platform.common.util.CommonUtils;
 import com.rsp.platform.domain.board.dto.BoardDetailResponse;
 import com.rsp.platform.domain.board.dto.BoardListResponse;
 import com.rsp.platform.domain.board.dto.BoardRequest;
 import com.rsp.platform.domain.board.entity.BoardEntity;
-import com.rsp.platform.domain.board.repository.BoardRepository;
 import com.rsp.platform.domain.board.repository.BoardQueryRepository;
+import com.rsp.platform.domain.board.repository.BoardRepository;
 import com.rsp.platform.domain.file.dto.AttachFileResponse;
+import com.rsp.platform.domain.file.entity.AttachFileEntity;
+import com.rsp.platform.domain.file.entity.LinkFileEntity;
 import com.rsp.platform.domain.file.repository.AttachFileRepository;
 import com.rsp.platform.domain.file.repository.LinkFileRepository;
-import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
-
-import org.springframework.web.multipart.MultipartFile;
-import com.rsp.platform.domain.file.entity.AttachFileEntity;
-import com.rsp.platform.domain.file.entity.LinkFileEntity;
-import com.rsp.platform.common.file.FileStorageService;
 
 import static com.rsp.platform.common.util.CommonUtils.validateDateParameters;
 
@@ -106,7 +97,7 @@ public class BoardService {
     }
 
     /**
-     * 게시글 파일 등록 [첨부]
+     * 게시글 파일 등록
      */
     @Transactional
     public BoardDetailResponse insertBoard(BoardRequest dto, MultipartFile[] files) throws IOException {
@@ -129,10 +120,10 @@ public class BoardService {
                 dto.getInsertId()
         );
 
-        // 1. 게시글 먼저 저장 (PK 생성)
+        // 게시글 먼저 저장 (PK 생성)
         BoardEntity savedBoard = boardRepository.save(board);
 
-        // 2. 파일 처리
+        // 파일 처리
         // 첨부파일 처리
         if (files != null && files.length > 0) {
             for (MultipartFile file : files) {
@@ -185,25 +176,25 @@ public class BoardService {
             throw new IllegalArgumentException("필수 입력값(boardTitle, boardContent, updateId)이 누락되었거나 비어있습니다.");
         }
 
-        // 1. 게시글 내용 수정 (JPA 변경감지로 자동 업데이트 - save() 불필요)
+        // 게시글 내용 수정 (JPA 변경감지로 자동 업데이트 - save() 불필요)
         boardEntity.update(dto.getBoardTitle(), dto.getBoardContent(), dto.getUpdateId());
 
-        // 2. 기존 첨부파일 소프트 삭제 처리
+        // 기존 첨부파일 소프트 삭제 처리
         List<LinkFileEntity> existingLinkFiles = linkFileRepository.findByRefId(boardId);
         for (LinkFileEntity linkFile : existingLinkFiles) {
             linkFile.update(boardId, dto.getUpdateId());
             linkFileRepository.save(linkFile); // DB 반영 필수
         }
 
-        // 3. 새로운 첨부파일 등록 처리
+        // 새로운 첨부파일 등록 처리
         if (files != null && files.length > 0) {
             for (MultipartFile file : files) {
                 if (!file.isEmpty()) {
-                    // 3-1. 실제 파일 저장 (UUID 기반 고유명 생성)
+                    // 실제 파일 저장 (UUID 기반 고유명 생성)
                     String saveFileName = fileStorageService.generateSaveName(file.getOriginalFilename());
                     String filePath = fileStorageService.save(file, saveFileName);
 
-                    // 3-2. rsp_attach_file 테이블에 파일 메타정보 저장
+                    // rsp_attach_file 테이블에 파일 메타정보 저장
                     AttachFileEntity attachFile = AttachFileEntity.builder()
                             .originalFilename(file.getOriginalFilename())
                             .saveFilename(saveFileName)
@@ -213,7 +204,7 @@ public class BoardService {
                             .build();
                     AttachFileEntity savedAttachFile = attachFileRepository.save(attachFile);
 
-                    // 3-3. rsp_link_file 테이블에 게시글-파일 연결 관계 저장
+                    // rsp_link_file 테이블에 게시글-파일 연결 관계 저장
                     LinkFileEntity newLinkFile = LinkFileEntity.builder()
                             .refId(boardId)  // 게시글 ID
                             .attachFileId(savedAttachFile.getAttachId()) // 방금 저장한 파일 ID
@@ -224,7 +215,7 @@ public class BoardService {
             }
         }
 
-        // 4. 수정된 게시글 정보 반환 (첨부파일 목록 포함)
+        // 수정된 게시글 정보 반환 (첨부파일 목록 포함)
         BoardDetailResponse response = BoardDetailResponse.fromEntity(boardEntity);
         List<AttachFileResponse> updatedFiles = boardQueryRepository.findFilesByBoardIdAndIsDeleteFalse(boardId);
         response.setFiles(updatedFiles);

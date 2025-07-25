@@ -66,7 +66,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleValidationError(MethodArgumentNotValidException e) {
         String message = "입력값 검증에 실패했습니다.";
         
-        // 첫 번째 검증 에러 메시지 사용
+        // 첫 검증 에러 메시지 사용
         if (e.getBindingResult().hasFieldErrors()) {
             message = e.getBindingResult().getFieldErrors().get(0).getDefaultMessage();
         }

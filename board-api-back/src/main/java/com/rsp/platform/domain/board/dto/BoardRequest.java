@@ -1,9 +1,7 @@
 package com.rsp.platform.domain.board.dto;
 
 import com.rsp.platform.domain.board.entity.BoardEntity;
-import jakarta.persistence.Column;
 import lombok.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 

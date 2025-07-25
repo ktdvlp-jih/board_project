@@ -38,7 +38,7 @@ public class BoardQueryRepository {
         QBoardEntity board = QBoardEntity.boardEntity;
         QLinkFileEntity linkFile = QLinkFileEntity.linkFileEntity;
 
-        // 1. 동적 검색 조건 생성
+        // 동적 검색 조건 생성
         BooleanBuilder builder = new BooleanBuilder();
         
         // 기본 조건 (삭제되지 않고 활성화된 게시글)
@@ -108,10 +108,10 @@ public class BoardQueryRepository {
             throw new IllegalArgumentException("날짜 형식이 올바르지 않습니다.");
         }
         
-        // 2. 정렬 설정
+        // 정렬 설정
         Sort.Direction direction = Sort.Direction.fromOptionalString(sortDirection).orElse(Sort.Direction.DESC);
         
-        // 3. 파일 개수 포함 QueryDSL 쿼리 실행
+        // 파일 개수 포함 QueryDSL 쿼리 실행
         List<BoardListResponse> content = queryFactory
                 .select(Projections.constructor(BoardListResponse.class,
                     board.boardId,
@@ -131,7 +131,7 @@ public class BoardQueryRepository {
                 .limit(size)
                 .fetch();
 
-        // 4. 전체 카운트 조회
+        // 전체 카운트 조회
         Long total = queryFactory
                 .select(board.boardId.countDistinct())
                 .from(board)
@@ -139,7 +139,7 @@ public class BoardQueryRepository {
                 .where(builder)
                 .fetchOne();
         
-        // 5. Page 객체 생성
+        // Page 객체 생성
         Pageable pageable = PageRequest.of(page, size);
         return new PageImpl<>(content, pageable, total != null ? total : 0L);
     }
