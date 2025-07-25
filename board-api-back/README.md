@@ -1,94 +1,91 @@
-# README.md
+# Spring Boot 게시판 API 프로젝트
 
-## 📘 프로젝트 소개
-Spring Boot 기반의 게시판 프로젝트입니다. 기존에는 MyBatis 방식에 익숙했으나
-이번 프로젝트에서는 Spring Data JPA + Hibernate + QueryDSL 조합을 새롭게 적용하였습니다.
+## 📘 1. 프로젝트 소개
+Spring Boot와 JPA를 활용한 RESTful 게시판 API입니다.
+게시글 CRUD 및 파일 첨부 기능을 제공합니다.
 
-## 🧰 기술 스택
-- Java 17
-- Spring Boot 3.x
-- Spring Data JPA + Hibernate
-- QueryDSL (동적 쿼리)
-- MySQL, SQL Server, Oracle, H2 (다중 DB 지원)
-- Gradle
-- JUnit 5, Mockito (테스트)
+## 🧰 2. 기술 스택
+- **Language**: Java 17
+- **Framework**: Spring Boot 3.5.3
+- **ORM**: Spring Data JPA + Hibernate
+- **Query**: QueryDSL
+- **Database**: SQL Server
+- **Build Tool**: Gradle 8.14.3
 
-## 📁 프로젝트 구조
+## 📁 3. 프로젝트 구조
 ```
-├── src
-│   ├── main
-│   │   ├── java/com/rsp/board
-│   │   │   ├── entity
-│   │   │   ├── repository
-│   │   │   ├── service
-│   │   │   └── controller
-│   │   └── resources
-│   │       ├── application.properties
-│   │       ├── application-mssql.properties
-│   │       ├── application-mysql.properties
-│   │       ├── application-maria.properties
-│   │       ├── application-oracle.properties
-│   │       ├── application-postsql.properties
-│   │       └── logback-spring.xml
-```
-
-## ✨ 주요 기능
-- 게시글 CRUD (등록, 조회, 수정, 삭제)
-- 파일 첨부 및 관리 (다중 파일 지원)
-- 동적 검색 (제목, 내용, 제목+내용, 날짜 범위)
-- 페이징 처리 및 정렬
-- 단위/통합 테스트
-
-## ⚙ 실행 방법
-1. 원하는 DB에 맞는 프로파일을 선택해 활성화 (`application.properties`)
-2. Gradle 빌드 후 실행
-   ```bash
-   ./gradlew bootRun --args='--spring.profiles.active=mssql'
-   ```
-
-## 📝 예시 설정
-### application.properties
-```properties
-spring.profiles.active=mssql
+src/main/java/com/rsp/platform/
+├── BoardApiApplication.java
+├── common/
+│   ├── config/WebConfig.java
+│   ├── exception/
+│   └── util/CommonUtils.java
+├── config/QueryDslConfig.java
+└── domain/
+    ├── board/
+    │   ├── controller/BoardController.java
+    │   ├── service/BoardService.java
+    │   ├── repository/
+    │   ├── entity/BoardEntity.java
+    │   └── dto/
+    └── file/
+        ├── service/FileStorageService.java
+        ├── repository/
+        ├── entity/
+        └── dto/
 ```
 
-### application-mssql.properties
-```properties
-spring.datasource.url=jdbc:sqlserver://localhost:1433;databaseName=boarddb
-spring.datasource.username=sa
-spring.datasource.password=your_password
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
-spring.jpa.properties.hibernate.format_sql=true
+## 🚀 4. 실행 방법
+```bash
+# 애플리케이션 실행
+./gradlew bootRun
+
+# JAR 빌드
+./gradlew bootJar
 ```
 
-> 💡 다른 DB를 사용할 경우 `application-mysql.properties`, `application-oracle.properties` 등에서 설정을 변경해 사용하면 됩니다.
+## ✨ 5. 기능 요약
+- 게시글 CRUD (등록/조회/수정/삭제)
+- 파일 첨부 및 관리
+- 동적 검색 (제목/내용/날짜)
+- 페이징 처리
+- 조회수 관리
 
-## 📚 JPA Repository 예시
-```java
-@Repository
-public interface BoardRepository extends JpaRepository<Board, Long> {
-    List<Board> findByIsDeleteFalseAndIsEnableTrueOrderByBoardIdDesc();
-}
-```
+## 📋 6. API 명세
+**Base URL**: `http://localhost:8080/api`
 
-## 🧩 Service 예시
-```java
-@Service
-@RequiredArgsConstructor
-public class BoardService {
+- `GET /boards` - 게시글 목록 조회
+- `GET /boards/{boardId}` - 게시글 상세 조회
+- `POST /boards` - 게시글 등록
+- `PUT /boards/{boardId}` - 게시글 수정
+- `DELETE /boards/{boardId}` - 게시글 삭제
 
-    private final BoardRepository boardRepository;
-
-    public List<Board> getActiveBoards() {
-        return boardRepository.findByIsDeleteFalseAndIsEnableTrueOrderByBoardIdDesc();
+## 🗄️ 7. ERD
+```mermaid
+erDiagram
+    RSP_BOARD {
+        BIGINT board_id PK
+        VARCHAR board_title
+        TEXT board_content
+        BIGINT view_count
+        BIT is_delete
+        BIT is_enable
     }
-}
+    
+    RSP_ATTACH_FILE {
+        BIGINT attach_id PK
+        VARCHAR original_filename
+        VARCHAR save_filename
+        VARCHAR file_path
+        BIGINT file_size
+    }
+    
+    RSP_LINK_FILE {
+        BIGINT link_id PK
+        BIGINT ref_id FK
+        BIGINT attach_id FK
+    }
+    
+    RSP_BOARD ||--o{ RSP_LINK_FILE : ref_id
+    RSP_ATTACH_FILE ||--o{ RSP_LINK_FILE : attach_id
 ```
-
-## 🚧 향후 계획
-- 사용자 인증/권한 관리
-- 게시글 조회수 증가 기능
-- 파일 다운로드 API
-- 게시글 좋아요/댓글 기능
-
