@@ -55,7 +55,9 @@ src/main/java/com/rsp/platform/
 - **조회수 관리**: 게시글 조회시 자동 조회수 증가
 - **전역 예외 처리**: 일관된 API 응답 구조
 
-## 📋 5. API 명세
+## 📋 5. API 명세 [명세서파일 참고]
+1. rsp_project API 명세서.md
+2. rsp_project API 명세서.xlsx
 **Base URL**: `http://localhost:8080/api`
 
 | Method | Endpoint | Description |
