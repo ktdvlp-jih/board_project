@@ -47,7 +47,40 @@ src/main/java/com/rsp/platform/
         └── dto/AttachFileResponse.java       # 파일 응답 DTO
 ```
 
-## ✨ 4. 기능 요약
+## 4. 실행 방법 (IntelliJ 기준)
+
+이 프로젝트는 별도의 배포 파일 없이 IntelliJ IDEA에서 직접 실행하여 테스트하였습니다.
+
+1. **프로젝트 클론**
+```bash
+git clone https://github.com/ktdvlp-jih/board_project
+
+```
+
+2. **IntelliJ로 열기**
+   - IntelliJ IDEA 실행
+   - File > New > Project from version Control 선택 후 clone
+
+3. **README2 열기**
+   - mssql DB 생성
+
+4. **의존성 다운로드**
+   - Gradle: 우측 Gradle 탭에서 'Refresh' 클릭
+
+5. **애플리케이션 실행**
+   - 'BoardApiApplication.java' 파일 열기
+      - 자바 17 로 설정되어 있지 않다면 단축키 사용후 Ctrl+Shift+Alt+S 자바 17로 설정
+      - BoardApiApplication 실행 설정이 필요하다면 Run > Edit Configurations 이동 후 
+         Name : BoardApiApplication
+         Build and run 패키지 경로 com.rsp.platform.BoardApiApplication로 설정
+
+6. **API 테스트** [rsp_project_API명세서.md 또는 rsp_project_API명세서.xlsx 확인]
+   - Postman을 이용해 API 호출
+      - rsp_project.postman_collection.json 파일 이용하요 import후 사용가능
+
+---
+
+## ✨ 5. 기능 요약
 - **게시글 CRUD**: 등록, 조회, 수정, 삭제 (소프트 삭제 적용)
 - **파일 첨부**: 다중 파일 업로드 및 관리 (UUID 기반 파일명)
 - **동적 검색**: 제목, 내용, 날짜 범위별 검색 (QueryDSL 활용)
@@ -55,7 +88,7 @@ src/main/java/com/rsp/platform/
 - **조회수 관리**: 게시글 조회시 자동 조회수 증가
 - **전역 예외 처리**: 일관된 API 응답 구조
 
-## 📋 5. API 명세 [명세서파일 참고]
+## 📋 6. API 명세 [명세서파일 참고]
 1. rsp_project API 명세서.md
 2. rsp_project API 명세서.xlsx
 **Base URL**: `http://localhost:8080/api`
