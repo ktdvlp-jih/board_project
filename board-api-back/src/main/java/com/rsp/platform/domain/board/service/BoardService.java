@@ -49,16 +49,16 @@ public class BoardService {
 
 
     /**
-     * 게시글 조회 (첨부파일 포함)
+     * 게시글 상세 조회
      */
     @Transactional(readOnly = true)
     public BoardDetailResponse boardInfo(Long boardId) {
-        // 400 Bad Request: 잘못된 파라미터
+        // 잘못된 파라미터 검증
         if (boardId == null || boardId <= 0) {
             throw new IllegalArgumentException("유효하지 않은 게시글 ID입니다.");
         }
 
-        // 404 Not Found: 게시글 없음
+        // 게시글 조회
         BoardEntity entity = boardRepository.findByBoardIdAndIsDeleteFalseAndIsEnableTrue(boardId)
                 .orElseThrow(() -> new NoSuchElementException("해당 게시글이 존재하지 않거나 비활성화되었습니다."));
 
@@ -69,7 +69,7 @@ public class BoardService {
         // 첨부파일 목록 조회
         List<AttachFileResponse> files = boardQueryRepository.findFilesByBoardIdAndIsDeleteFalse(boardId);
 
-        // BoardDetailResponse 생성 후 파일 목록 설정
+        // 응답 객체 생성
         BoardDetailResponse response = BoardDetailResponse.fromEntity(entity);
         response.setFiles(files);
 
@@ -77,12 +77,11 @@ public class BoardService {
     }
 
     /**
-     * 게시글 파일 등록 [미첨부]
+     * 게시글 등록
      */
     @Transactional
     public BoardDetailResponse insertBoard(BoardRequest dto) {
-
-        // 400 Bad Request: 잘못된 파라미터
+        // 필수 입력값 검증
         if (dto.getBoardTitle() == null || dto.getBoardTitle().isBlank()
                 || dto.getBoardContent() == null || dto.getBoardContent().isBlank()
                 || dto.getStartDate() == null
@@ -91,9 +90,10 @@ public class BoardService {
             throw new IllegalArgumentException("필수 입력값(boardTitle, boardContent, StartDate, EndDate, insertId)이 누락되었거나 비어있습니다.");
         }
 
+        // 날짜 유효성 검증
         validateDateParameters(dto.getStartDate(), dto.getEndDate());
 
-        // 게시글 엔티티 생성
+        // 게시글 엔티티 생성 및 저장
         BoardEntity board = BoardEntity.create(
                 dto.getBoardTitle(),
                 dto.getBoardContent(),
