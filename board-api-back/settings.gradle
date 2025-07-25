@@ -1,1 +1,2 @@
-rootProject.name = 'board-api-back'
+rootProject.name = 'board_project'
+include 'board-api-back'

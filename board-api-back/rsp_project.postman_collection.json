@@ -1,0 +1,268 @@
+{
+	"info": {
+		"_postman_id": "92d75918-049d-43ed-afa4-0da528d762fc",
+		"name": "rsp_project",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "34079645",
+		"_collection_link": "https://chemtopia.postman.co/workspace/chemtopia-Workspace~f4cc7cb4-9d0c-4c96-bc74-8ecf0b77b231/collection/34079645-92d75918-049d-43ed-afa4-0da528d762fc?action=share&source=collection_link&creator=34079645"
+	},
+	"item": [
+		{
+			"name": "게시판 조회",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/boards?codeId=003&boardTitle=테스트제&boardContent=테스트본&fromDate=2025-07-21T23:12:00&toDate=2025-07-25T23:12:00",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"boards"
+					],
+					"query": [
+						{
+							"key": "codeId",
+							"value": "003"
+						},
+						{
+							"key": "boardTitle",
+							"value": "테스트제"
+						},
+						{
+							"key": "boardContent",
+							"value": "테스트본"
+						},
+						{
+							"key": "fromDate",
+							"value": "2025-07-21T23:12:00"
+						},
+						{
+							"key": "toDate",
+							"value": "2025-07-25T23:12:00"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "게시판 상세조회",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/boards/46",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"boards",
+						"46"
+					],
+					"query": [
+						{
+							"key": "test",
+							"value": "1",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "게시판 등록 첨부파일 미등록",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"boardTitle\": \"테스트 제목\",\r\n  \"boardContent\": \"테스트 본문\",\r\n  \"startDate\" : \"2024-07-24T23:12:00\",\r\n  \"endDate\" : \"2024-07-31T23:12:00\",\r\n  \"insertId\": \"전일훈\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/boards",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"boards"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "게시판 등록 첨부파일 등록",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "multipart/form-data",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "dto",
+							"value": "{\n\"boardTitle\":\"테스트제목\",\n\"boardContent\":\"테스트본문\",\n\"startDate\": \"2025-07-21T00:58:09.0711087\",\n\"endDate\": \"2025-07-29T00:58:09.0711087\",\n\"insertId\":\"tester\"\n}",
+							"contentType": "application/json",
+							"type": "text"
+						},
+						{
+							"key": "files",
+							"type": "file",
+							"src": "/C:/Users/전일훈/Downloads/공유의시간 자료_HR newsletter.pdf"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/boards",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"boards"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "게시판 수정 첨부파일 등록",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "multipart/form-data",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "dto",
+							"value": "{\n\"boardTitle\":\"테스트제목\",\n\"boardContent\":\"테스트본문\",\n\"startDate\": \"2025-07-21T00:58:09.0711087\",\n\"endDate\": \"2025-07-29T00:58:09.0711087\",\n\"updateId\":\"수정자\"\n}",
+							"contentType": "application/json",
+							"type": "text"
+						},
+						{
+							"key": "files",
+							"type": "file",
+							"src": "/C:/Users/전일훈/Downloads/LG유플러스_이동통신_202309_전_훈.html"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/boards/46",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"boards",
+						"46"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "게시판 삭제",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/api/boards/44",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"api",
+						"boards",
+						"44"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "baseURL",
+			"value": "https://devcms.akc.co.kr",
+			"type": "default"
+		}
+	]
+}
